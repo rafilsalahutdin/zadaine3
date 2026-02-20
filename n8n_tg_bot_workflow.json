@@ -1,0 +1,557 @@
+{
+  "name": "ирбис",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1008,
+        -784
+      ],
+      "id": "e8fcf37c-010b-42d4-a4fa-bb363a6d3555",
+      "name": "Telegram Trigger",
+      "webhookId": "549c8796-285c-4d9d-b0ce-026f43748ae2",
+      "credentials": {
+        "telegramApi": {
+          "id": "tA1BREjnYhtL43R3",
+          "name": "irbsac19076_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b1151817-279e-4d99-a463-5f5e7b84ae00"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/start"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a17e67f3-6a1b-4ad3-b878-6823da5c8acf",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "фейхуа",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f2b5f23b-f4d8-49b7-9378-bd0b302b6e84",
+                    "leftValue": "={{ $json.message.document }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        -800
+      ],
+      "id": "93fc068e-b922-40b4-bb55-d750e11c10ce",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Пришлите, пожалуйста, файл таблицы в формате .xlsx",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -976
+      ],
+      "id": "6b53a605-109a-47e9-8fc0-a786a1b2f3e4",
+      "name": "Send a text message1",
+      "webhookId": "ee828d24-cef6-4732-b00c-9ab4e87e3808",
+      "credentials": {
+        "telegramApi": {
+          "id": "tA1BREjnYhtL43R3",
+          "name": "irbsac19076_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем массив сотрудников из предыдущей ноды\nconst employees = $input.all().map(item => item.json);\nconst chatId = $('Telegram Trigger').first().json.message.chat.id;\n\n\nif (!employees || employees.length === 0) {\n  return [{\n    json: {\n      text: \"❌ В файле не найдено данных о сотрудниках.\"\n    }\n  }];\n}\n\n// Начинаем формировать сообщение\nlet message = \"📊 *Сводка по задачам сотрудников*\\n\\n\";\n\nlet totalTasks = 0;\nlet totalDone = 0;\nlet totalOnTime = 0;\n\nfor (const emp of employees) {\n  message += `👤 *${emp[\"Сотрудник\"]}*\\n`;\n  message += `📌 Всего задач: ${emp[\"Кол-во задач\"]}\\n`;\n  message += `✅ Выполнено: ${emp[\"Выполнено\"]}\\n`;\n  message += `🎯 В срок: ${emp[\"Выполнено в срок\"]}\\n`;\n  message += `──────────────────\\n`;\n\n  totalTasks += emp[\"Кол-во задач\"];\n  totalDone += emp[\"Выполнено\"];\n  totalOnTime += emp[\"Выполнено в срок\"];\n}\n\n// Добавляем общую статистику\nmessage += `\\n📈 *Общая статистика:*\\n`;\nmessage += `🔹 Всего задач: ${totalTasks}\\n`;\nmessage += `🔹 Выполнено: ${totalDone}\\n`;\nmessage += `🔹 В срок: ${totalOnTime}`;\n\n// Возвращаем готовый объект для Telegram\nreturn [{\n  json: {\n    chatId: chatId,\n    text: message\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -816
+      ],
+      "id": "128aa8aa-fe2d-454f-aed0-d3ac95962faa",
+      "name": "Отчет"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6169ebf4-a550-47c1-9b42-337028897534",
+              "leftValue": "={{ $json.message.document.mime_type }}",
+              "rightValue": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -288,
+        -704
+      ],
+      "id": "1a2ef82e-dc83-40da-bbf3-1d8b7ce966e9",
+      "name": "If xlsx"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        -560
+      ],
+      "id": "150255f9-ce0f-49d7-a568-863ea5ead34e",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.document.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "c16d357d-f23a-471e-960e-b3c7f0ee23a2",
+      "name": "Get File",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -16,
+        -560
+      ],
+      "webhookId": "f429aa15-6d58-4194-9474-90da35af3610",
+      "typeVersion": 1.1,
+      "credentials": {
+        "telegramApi": {
+          "id": "tA1BREjnYhtL43R3",
+          "name": "irbsac19076_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "file",
+        "options": {
+          "fileName": "=Задачи.xlsx",
+          "headerRow": true,
+          "sheetName": "Задачи"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        -608
+      ],
+      "id": "ed17246f-67eb-4135-8e2b-2b33dfbf1bb7",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "file",
+        "options": {
+          "fileName": "=Свод.xlsx",
+          "headerRow": true,
+          "sheetName": "Свод"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        -416
+      ],
+      "id": "9f23bd83-ffba-4db5-8bb4-e8663358b2bd",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем все задачи из файла\nconst tasks = $input.all().map(item => item.json);\nconst employees = {};\n\n// Словарь для преобразования чисел прописью в цифры\nconst numberWords = {\n  // Женский род (для \"две\")\n  \"ноль\": 0, \"одна\": 1, \"две\": 2, \"три\": 3, \"четыре\": 4, \"пять\": 5,\n  \"шесть\": 6, \"семь\": 7, \"восемь\": 8, \"девять\": 9, \"десять\": 10,\n  \"одиннадцать\": 11, \"двенадцать\": 12, \"тринадцать\": 13, \"четырнадцать\": 14,\n  \"пятнадцать\": 15, \"шестнадцать\": 16, \"семнадцать\": 17, \"восемнадцать\": 18,\n  \"девятнадцать\": 19, \"двадцать\": 20, \"тридцать\": 30, \"сорок\": 40,\n  \"пятьдесят\": 50, \"шестьдесят\": 60, \"семьдесят\": 70, \"восемьдесят\": 80,\n  \"девяносто\": 90, \"сто\": 100, \"двести\": 200, \"триста\": 300,\n  \"четыреста\": 400, \"пятьсот\": 500, \"шестьсот\": 600, \"семьсот\": 700,\n  \"восемьсот\": 800, \"девятьсот\": 900, \"тысяча\": 1000, \"тысячи\": 1000, \"тысяч\": 1000,\n  \n  // Мужской род\n  \"один\": 1, \"два\": 2\n};\n\n// Функция для преобразования текста в число\nfunction textToNumber(text) {\n  if (!text) return NaN;\n  \n  // Приводим к нижнему регистру и чистим\n  const str = String(text).toLowerCase().trim();\n  \n  // Сначала пробуем стандартное преобразование\n  const standardNum = Number(str.replace(/,/g, '.').replace(/\\s/g, ''));\n  if (!isNaN(standardNum)) return standardNum;\n  \n  // Если не получилось, разбиваем на слова\n  const words = str.split(/[\\s,-]+/).filter(w => w.length > 0);\n  \n  // Пробуем найти известные слова-числа\n  let result = 0;\n  let currentNumber = 0;\n  let hasNumber = false;\n  \n  for (const word of words) {\n    if (numberWords.hasOwnProperty(word)) {\n      const value = numberWords[word];\n      \n      // Обработка составных чисел (например, \"двадцать один\")\n      if (value >= 1000) {\n        // Тысячи\n        result += (currentNumber || 1) * value;\n        currentNumber = 0;\n      } else if (value >= 100) {\n        // Сотни\n        currentNumber += value;\n      } else if (value >= 10) {\n        // Десятки\n        currentNumber += value;\n      } else {\n        // Единицы\n        currentNumber += value;\n      }\n      \n      hasNumber = true;\n    } else if (word.match(/^\\d+$/)) {\n      // Если слово - это цифра в строке\n      currentNumber += parseInt(word, 10);\n      hasNumber = true;\n    }\n  }\n  \n  result += currentNumber;\n  \n  // Если ничего не нашли, пробуем извлечь число из строки\n  if (!hasNumber) {\n    const extracted = str.match(/-?\\d+\\.?\\d*/);\n    if (extracted) {\n      return Number(extracted[0]);\n    }\n    return NaN;\n  }\n  \n  return result || NaN;\n}\n\n// Функция для нормализации статуса\nfunction normalizeStatus(status) {\n  if (!status) return '';\n  return String(status).trim().toLowerCase();\n}\n\n// Проходим по каждой задаче\nfor (const task of tasks) {\n  const employeeName = task[\"Сотрудник\"]?.toString().trim();\n  \n  // Пропускаем, если нет имени сотрудника\n  if (!employeeName) continue;\n\n  // Получаем и чистим данные\n  const status = normalizeStatus(task[\"Статус\"]);\n  const deadline = textToNumber(task[\"Срок (дней)\"]);\n  const fact = textToNumber(task[\"Факт (дней)\"]);\n\n  // Отладка (раскомментировать если нужно)\n  // console.log(`Сотрудник: ${employeeName}, Срок: ${deadline}, Факт: ${fact}`);\n\n  // Если нет статистики по сотруднику — создаём\n  if (!employees[employeeName]) {\n    employees[employeeName] = {\n      \"Сотрудник\": employeeName,\n      \"Кол-во задач\": 0,\n      \"Выполнено\": 0,\n      \"Выполнено в срок\": 0\n    };\n  }\n\n  // Увеличиваем общее количество задач\n  employees[employeeName][\"Кол-во задач\"] += 1;\n\n  // Проверяем, выполнена ли задача\n  const isDone = (status === \"выполнено\");\n  \n  if (isDone) {\n    employees[employeeName][\"Выполнено\"] += 1;\n\n    // Проверяем, выполнено ли в срок\n    const canCompare = !isNaN(deadline) && !isNaN(fact);\n    \n    if (canCompare && fact <= deadline) {\n      employees[employeeName][\"Выполнено в срок\"] += 1;\n    }\n  }\n}\n\n// Преобразуем объект в массив\nlet result = Object.values(employees);\n\n// Сортируем по имени\nresult.sort((a, b) => a[\"Сотрудник\"].localeCompare(b[\"Сотрудник\"]));\n\n// Возвращаем результат\nreturn result.map(emp => ({ json: emp }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -816
+      ],
+      "id": "fe685d17-2ace-4ddf-bfdf-f3460c729d7d",
+      "name": "Анализ"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        -816
+      ],
+      "id": "5563223d-c0c0-4c1f-84fa-21e2367596e4",
+      "name": "Ответ",
+      "webhookId": "ef09465b-875f-40dc-8797-8dc2d116b66e",
+      "credentials": {
+        "telegramApi": {
+          "id": "tA1BREjnYhtL43R3",
+          "name": "irbsac19076_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем все задачи из входного потока\nconst inputData = $input.all();\nconst tasks = inputData.map(item => item.json); // Преобразуем в массив задач\nconst file_name = $('Telegram Trigger').first().json.message.document.file_name;\n// Сохраняем chatId из входящего сообщения Telegram\nconst chatId = $('Telegram Trigger').first().json.message.chat.id;\n\nconst employees = {};\n\n// Словарь для чисел прописью\nconst numberWords = {\n  \"ноль\": 0, \"один\": 1, \"одна\": 1, \"два\": 2, \"две\": 2, \"три\": 3,\n  \"четыре\": 4, \"пять\": 5, \"шесть\": 6, \"семь\": 7, \"восемь\": 8,\n  \"девять\": 9, \"десять\": 10, \"одиннадцать\": 11, \"двенадцать\": 12,\n  \"тринадцать\": 13, \"четырнадцать\": 14, \"пятнадцать\": 15, \"шестнадцать\": 16,\n  \"семнадцать\": 17, \"восемнадцать\": 18, \"девятнадцать\": 19, \"двадцать\": 20,\n  \"тридцать\": 30, \"сорок\": 40, \"пятьдесят\": 50, \"шестьдесят\": 60,\n  \"семьдесят\": 70, \"восемьдесят\": 80, \"девяносто\": 90, \"сто\": 100\n};\n\nfunction textToNumber(text) {\n  if (text === undefined || text === null || text === '') return NaN;\n  \n  const str = String(text).toLowerCase().trim();\n  \n  // Пробуем стандартное преобразование (числа, \"5\", \"5.5\")\n  const standardNum = Number(str.replace(/,/g, '.').replace(/\\s/g, ''));\n  if (!isNaN(standardNum)) return standardNum;\n  \n  // Пробуем найти в словаре\n  if (numberWords.hasOwnProperty(str)) return numberWords[str];\n  \n  return NaN;\n}\n\nfunction normalizeStatus(status) {\n  if (!status) return '';\n  return String(status).trim().toLowerCase();\n}\n\n// Сохраняем оригинальные задачи (с уже заполненной колонкой \"Выполнено в срок\")\nconst originalTasks = [];\n\nfor (const task of tasks) {\n  const employeeName = task[\"Сотрудник\"]?.toString().trim();\n  if (!employeeName) continue;\n\n  // Определяем, выполнено ли в срок\n  const status = normalizeStatus(task[\"Статус\"]);\n  const deadline = textToNumber(task[\"Срок (дней)\"]);\n  const fact = textToNumber(task[\"Факт (дней)\"]);\n  \n  const isDone = (status === \"выполнено\");\n  let isOnTime = \"Нет\";\n  \n  if (isDone && !isNaN(deadline) && !isNaN(fact) && fact <= deadline) {\n    isOnTime = \"Да\";\n  }\n  \n  // Создаём копию задачи с заполненным полем \"Выполнено в срок\"\n  const enrichedTask = { ...task };\n  enrichedTask[\"Выполнено в срок\"] = isOnTime;\n  originalTasks.push(enrichedTask);\n\n  // Агрегация по сотрудникам\n  if (!employees[employeeName]) {\n    employees[employeeName] = {\n      \"Сотрудник\": employeeName,\n      \"Кол-во задач\": 0,\n      \"Выполнено\": 0,\n      \"Выполнено в срок\": 0\n    };\n  }\n\n  employees[employeeName][\"Кол-во задач\"] += 1;\n\n  if (isDone) {\n    employees[employeeName][\"Выполнено\"] += 1;\n    if (isOnTime === \"Да\") {\n      employees[employeeName][\"Выполнено в срок\"] += 1;\n    }\n  }\n}\n\n// Формируем сводку\nconst summary = Object.values(employees);\nsummary.sort((a, b) => a[\"Сотрудник\"].localeCompare(b[\"Сотрудник\"]));\n\n// Возвращаем всё, что нужно для следующих шагов\nreturn [{\n  json: {\n    chatId: chatId,\n    file_name: file_name,\n    originalTasks: originalTasks,\n    summary: summary\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -560
+      ],
+      "id": "bfcdc8d7-86c8-4cfc-8552-c68c07fbc0fe",
+      "name": "Обработка"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst originalTasks = input.originalTasks || [];\n\n// Проходим по каждой задаче и формируем объект с нужными полями\nconst tasksRows = originalTasks.map(task => ({\n  \"ID задачи\": task[\"ID задачи\"] || \"\",\n  \"Сотрудник\": task[\"Сотрудник\"] || \"\",\n  \"Отдел\": task[\"Отдел\"] || \"\",\n  \"Срок (дней)\": task[\"Срок (дней)\"] || \"\",\n  \"Статус\": task[\"Статус\"] || \"\",\n  \"Факт (дней)\": task[\"Факт (дней)\"] || \"\",\n  \"Выполнено в срок\": task[\"Выполнено в срок\"] || \"Нет\"\n}));\n\n// ВОЗВРАЩАЕМ ЧИСТЫЙ МАССИВ ЗАДАЧ\nreturn tasksRows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -608
+      ],
+      "id": "55437d2b-3273-4216-940a-a164fcad70d8",
+      "name": "Подготовка Задачи"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst summary = input.summary || [];\n\nconst summaryRows = [];\n\n// Формируем массив данных по сотрудникам\nfor (const emp of summary) {\n  summaryRows.push({\n    \"Сотрудник\": emp[\"Сотрудник\"],\n    \"Кол-во задач\": emp[\"Кол-во задач\"],\n    \"Выполнено\": emp[\"Выполнено\"],\n    \"Выполнено в срок\": emp[\"Выполнено в срок\"]\n  });\n}\n\n// ВОЗВРАЩАЕМ ЧИСТЫЙ МАССИВ (n8n сам преобразует в items)\nreturn summaryRows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -416
+      ],
+      "id": "7391799c-55c1-468c-bf1b-a60c3f524403",
+      "name": "Подготовка Свод"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "={{ $('Обработка').item.json.chatId }}",
+        "binaryData": true,
+        "binaryPropertyName": "file",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1296,
+        -528
+      ],
+      "id": "2a1f34fa-efaf-45ef-bccf-4e6a6c533045",
+      "name": "Send a document",
+      "webhookId": "01725173-b28c-46e1-bb57-ec7d0c0ab771",
+      "credentials": {
+        "telegramApi": {
+          "id": "tA1BREjnYhtL43R3",
+          "name": "irbsac19076_bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If xlsx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Отчет": {
+      "main": [
+        [
+          {
+            "node": "Ответ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If xlsx": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Анализ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Обработка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Send a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Send a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Анализ": {
+      "main": [
+        [
+          {
+            "node": "Отчет",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ответ": {
+      "main": [
+        []
+      ]
+    },
+    "Обработка": {
+      "main": [
+        [
+          {
+            "node": "Подготовка Задачи",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Подготовка Свод",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Подготовка Задачи": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Подготовка Свод": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a document": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Moscow",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 300,
+    "errorWorkflow": "ZvIoUnAHS7UQKCqs",
+    "availableInMCP": false
+  },
+  "versionId": "e39e03dd-abb0-44e0-bc26-2dc2919d666e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b17939e3a1338efe3526dbbbd76efcf429ce60984ff205ad9d863d902dade11b"
+  },
+  "id": "gvubv9XjlAyfbXWs",
+  "tags": []
+}
